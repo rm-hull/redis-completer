@@ -1,4 +1,4 @@
-{"name": "redis-completer",
+{"name": "redis-autocompleter",
  "description": "A redis completer using Sebastian's trie algorithm: https://gist.github.com/574044",
  "keywords": ["redis", "completer", "trie", "autocomplete"],
 
