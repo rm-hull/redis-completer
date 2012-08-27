@@ -1,4 +1,4 @@
-var completer = require('../completer');
+var completer = require('../completer')();
 var testCase = require('nodeunit').testCase;
 
 completer.applicationPrefix('_test');

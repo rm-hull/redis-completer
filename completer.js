@@ -45,10 +45,17 @@ module.exports.addCompletions = addCompletions = function (phrase, id, score, cb
         score = null;
     }
 
+    var callCbIfAny = function() {
+        if(cb) {
+            cb()
+        } else {
+            return null
+        }
+    }
 
     var text = phrase.trim().toLowerCase();
     if (! text) {
-        return cb();
+        return callCbIfAny();
     }
 
     if (id !== null) {
@@ -70,7 +77,7 @@ module.exports.addCompletions = addCompletions = function (phrase, id, score, cb
             if(internalCount === 0) {
                 count--
                 if(count === 0) {
-                    return cb()
+                    return callCbIfAny()
                 }
             }
         }
