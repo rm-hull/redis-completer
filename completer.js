@@ -48,7 +48,7 @@ module.exports.addCompletions = addCompletions = function (phrase, id, score, cb
 
     var text = phrase.trim().toLowerCase();
     if (! text) {
-        return null, null;
+        return cb();
     }
 
     if (id !== null) {
@@ -57,16 +57,32 @@ module.exports.addCompletions = addCompletions = function (phrase, id, score, cb
         phraseToStore = phrase;
     }
 
+    var count = text.split(/\s+/).length
+
+    if(count === 0) {
+        return cb()
+    }
+
     _.each(text.split(/\s+/), function(word) {
+        var internalCount = word.length + 2
+        var localCb = function() {
+            internalCount--
+            if(internalCount === 0) {
+                count--
+                if(count === 0) {
+                    return cb()
+                }
+            }
+        }
         for (var end_index=1; end_index <= word.length; end_index++) {
             var prefix = word.slice(0, end_index);
             module.exports.counter++;
-            r.zadd(ZKEY_COMPL, 0, prefix, cb);
+            r.zadd(ZKEY_COMPL, 0, prefix, localCb);
         }
         module.exports.counter++;
-        r.zadd(ZKEY_COMPL, 0, word+'*', cb);
+        r.zadd(ZKEY_COMPL, 0, word+'*', localCb);
         module.exports.counter++;
-        r.zadd(ZKEY_DOCS_PREFIX + word, score||0, phraseToStore, cb);
+        r.zadd(ZKEY_DOCS_PREFIX + word, score||0, phraseToStore, localCb);
     });
 }
 
