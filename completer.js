@@ -12,7 +12,7 @@ var r;
 
 module.exports = function(redisHost, redisPort, redisPass, callback) {
     if(redisHost && redisPort) {
-        r = redis.createClient(redisHost, redisPort);
+        r = redis.createClient(redisPort, redisHost);
         if(redisPass) {
             r.auth(redisPass, callback);
         }
