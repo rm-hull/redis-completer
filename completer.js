@@ -1,4 +1,3 @@
-var redis = require('redis');
 var _ = require('underscore');
 var fs = require('fs');
 
@@ -13,7 +12,7 @@ var r;
 module.exports = function(client) {
     r = client;
     return this;
-}
+};
 
 module.exports.applicationPrefix = applicationPrefix = function(prefix) {
     // update key prefixes with user-specified application prefix
@@ -25,14 +24,14 @@ module.exports.applicationPrefix = applicationPrefix = function(prefix) {
 module.exports.deleteAll = deleteAll = function(cb) {
     // clear all data
     r.zremrangebyrank(ZKEY_COMPL, 0, -1, cb);
-}
+};
 
 module.exports.counter = 0;
 
 module.exports.addCompletions = addCompletions = function (phrase, id, score, cb) {
     // Add completions for originalText to the completions trie.
     // Store the original text, prefixed by the optional 'key'
-
+    var id = id || null;
     if (typeof score === 'function') {
         cb = score;
         score = null;
@@ -40,11 +39,11 @@ module.exports.addCompletions = addCompletions = function (phrase, id, score, cb
 
     var callCbIfAny = function() {
         if(cb) {
-            cb()
+            cb();
         } else {
-            return null
+            return null;
         }
-    }
+    };
 
     var text = phrase.trim().toLowerCase();
     if (! text) {
@@ -57,23 +56,23 @@ module.exports.addCompletions = addCompletions = function (phrase, id, score, cb
         phraseToStore = phrase;
     }
 
-    var count = text.split(/\s+/).length
+    var count = text.split(/\s+/).length;
 
     if(count === 0) {
-        return cb()
+        return cb();
     }
 
     _.each(text.split(/\s+/), function(word) {
-        var internalCount = word.length + 2
+        var internalCount = word.length + 2;
         var localCb = function() {
-            internalCount--
+            internalCount--;
             if(internalCount === 0) {
-                count--
+                count--;
                 if(count === 0) {
-                    return callCbIfAny()
+                    return callCbIfAny();
                 }
             }
-        }
+        };
         for (var end_index=1; end_index <= word.length; end_index++) {
             var prefix = word.slice(0, end_index);
             module.exports.counter++;
@@ -84,7 +83,7 @@ module.exports.addCompletions = addCompletions = function (phrase, id, score, cb
         module.exports.counter++;
         r.zadd(ZKEY_DOCS_PREFIX + word, score||0, phraseToStore, localCb);
     });
-}
+};
 
 module.exports.addFromFile = addFromFile = function(filename) {
     // reads the whole file at once
@@ -93,9 +92,9 @@ module.exports.addFromFile = addFromFile = function(filename) {
         if (err) {
             return console.log("ERROR: reading " + filename + ": " + err), null;
         }
-        _.each(buf.toString().split(/\n/), function(s) { addCompletions(s)});
+        _.each(buf.toString().split(/\n/), function(s) { addCompletions(s);});
     });
-}
+};
 
 module.exports.getWordCompletions = getWordCompletions = function(word, count, callback) {
     // get up to count completions for the given word
@@ -103,8 +102,8 @@ module.exports.getWordCompletions = getWordCompletions = function(word, count, c
     var rangelen = 50;
 
     var prefix = word.toLowerCase().trim();
-    var getExact = word[word.length-1] === '*'
-    var results = []
+    var getExact = word[word.length-1] === '*';
+    var results = [];
 
     if (! prefix) {
         return callback(null, results);
@@ -141,7 +140,7 @@ module.exports.getWordCompletions = getWordCompletions = function(word, count, c
             return callback(null, results);
         });
     });
-}
+};
 
 module.exports.getPhraseCompletions = getPhraseCompletions = function(phrase, count, callback) {
 
@@ -179,19 +178,19 @@ module.exports.getPhraseCompletions = getPhraseCompletions = function(phrase, co
 
         });
     });
-}
+};
 
 module.exports.search = search = function(phrase, count, callback) {
     // @callback with up to @count matches for @phrase
     var count = count || 10;
     var callback = callback || function() {};
 
-    getPhraseCompletions(phrase, 10, function(err, completions) {
+    getPhraseCompletions(phrase, count, function(err, completions) {
         if (err) {
             callback(err, null);
         } else {
             var keys = _.map(completions, function(key) {
-                return ZKEY_DOCS_PREFIX+key
+                return ZKEY_DOCS_PREFIX+key;
             });
 
             if (keys.length) {
@@ -207,8 +206,9 @@ module.exports.search = search = function(phrase, count, callback) {
                         if (err) {
                             return callback(err, {});
                         } else {
+                            var doc;
                             while (docs.length > 0) {
-                                var doc = docs.shift();
+                                doc = docs.shift();
                                 var score = parseFloat(docs.shift());
                                 var prevScore = typeof results[doc] !== 'undefined' && results[doc] || 0;
                                 results[doc] = score + prevScore;
@@ -217,14 +217,14 @@ module.exports.search = search = function(phrase, count, callback) {
                             results[doc] += 10 * keys.length;
                         }
 
-                        if (iter == keys.length) {
+                        if (iter === keys.length) {
                             // it's annoying to deal with dictionaries in js
                             // turn it into a sorted list for the client's convenience
                             var ret = [];
                             for (var key in results) {
                                 ret.push(key);
                             }
-                            ret.sort(function(a,b) { return results[b] - results[a] });
+                            ret.sort(function(a,b) { return results[b] - results[a]; });
                             return callback(null, ret);
                         }
 
@@ -235,4 +235,4 @@ module.exports.search = search = function(phrase, count, callback) {
             }
         }
     });
-}
+};
