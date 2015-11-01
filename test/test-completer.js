@@ -1,4 +1,5 @@
-var completer = require('../completer')();
+var redis = require('redis');
+var completer = require('../completer')(redis.createClient());
 var testCase = require('nodeunit').testCase;
 
 completer.applicationPrefix('_test');
@@ -13,7 +14,7 @@ module.exports = testCase({
   tearDown: function(callback) {
     // so ... someday there will be a remove() function, right?
     callback();
-  }, 
+  },
 
   "word completions": function(test) {
     test.expect(1);
@@ -29,8 +30,8 @@ module.exports = testCase({
       test.ok(compls[0] === 'like');
       test.ok(compls[1] === 'pie');
       test.done();
-    }); 
-  }, 
+    });
+  },
 
   "search": function(test) {
     test.expect(4);
@@ -45,7 +46,7 @@ module.exports = testCase({
       completer.search("potatoes", 10, function(err, compls) {
         if (err) throw err;
         test.ok(compls.length === 1);
-        test.ok(compls[0] === "merg:I like potatoes")
+        test.ok(compls[0] === "merg:I like potatoes");
 
         test.done();
       });

@@ -10,15 +10,8 @@ var ZKEY_DOCS_PREFIX = 'docs:';
 
 var r;
 
-module.exports = function(redisHost, redisPort, redisPass, callback) {
-    if(redisHost && redisPort) {
-        r = redis.createClient(redisPort, redisHost);
-        if(redisPass) {
-            r.auth(redisPass, callback);
-        }
-    } else {
-        r = redis.createClient();
-    }
+module.exports = function(client) {
+    r = client;
     return this;
 }
 
