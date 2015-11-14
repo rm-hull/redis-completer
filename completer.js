@@ -56,13 +56,13 @@ module.exports.addCompletions = addCompletions = function (phrase, id, score, cb
         phraseToStore = phrase;
     }
 
-    var count = text.split(/\s+/).length;
+    var count = text.split(/\W+/).length;
 
     if(count === 0) {
         return cb();
     }
 
-    _.each(text.split(/\s+/), function(word) {
+    _.each(text.split(/\W+/), function(word) {
         var internalCount = word.length + 2;
         var localCb = function() {
             internalCount--;
