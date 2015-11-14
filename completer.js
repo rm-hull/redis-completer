@@ -213,8 +213,6 @@ module.exports.search = search = function(phrase, count, callback) {
                                 var prevScore = typeof results[doc] !== 'undefined' && results[doc] || 0;
                                 results[doc] = score + prevScore;
                             }
-                            // credit for more overall matches
-                            results[doc] += 10 * keys.length;
                         }
 
                         if (iter === keys.length) {
